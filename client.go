@@ -20,10 +20,10 @@ type Client struct {
 	responseResolverMap map[string]chan Message
 	resolverMu          sync.Mutex
 
-	onConnect func()
-	onReceive func(message Message)
-	onClose   func(hadError bool)
-	onError   func(err error)
+	OnConnect func()
+	OnReceive func(message Message)
+	OnClose   func(hadError bool)
+	OnError   func(err error)
 
 	sendChan chan sendTask
 }
@@ -39,10 +39,10 @@ func NewClient(option ClientOption) *Client {
 		Name:                option.Name,
 		Key:                 option.Key,
 		responseResolverMap: make(map[string]chan Message),
-		onConnect:           option.OnConnect,
-		onReceive:           option.OnReceive,
-		onClose:             option.OnClose,
-		onError:             option.OnError,
+		OnConnect:           option.OnConnect,
+		OnReceive:           option.OnReceive,
+		OnClose:             option.OnClose,
+		OnError:             option.OnError,
 		sendChan:            make(chan sendTask, 100),
 	}
 }
@@ -96,8 +96,8 @@ func (c *Client) Start() {
 	data, _ := json.Marshal(handshake)
 	c.write(string(data) + "\n")
 
-	if c.onConnect != nil {
-		c.onConnect()
+	if c.OnConnect != nil {
+		c.OnConnect()
 	}
 }
 
@@ -163,11 +163,11 @@ func (c *Client) readLoop() {
 		if err != nil {
 			c.mu.Lock()
 			if !c.closed {
-				if c.onClose != nil {
-					c.onClose(true)
+				if c.OnClose != nil {
+					c.OnClose(true)
 				}
-				if c.onError != nil && err != net.ErrClosed {
-					c.onError(err)
+				if c.OnError != nil && err != net.ErrClosed {
+					c.OnError(err)
 				}
 			}
 			c.mu.Unlock()
@@ -192,8 +192,8 @@ func (c *Client) readLoop() {
 		} else {
 			var raw json.RawMessage
 			if err := json.Unmarshal([]byte(line), &raw); err != nil {
-				if c.onError != nil {
-					c.onError(err)
+				if c.OnError != nil {
+					c.OnError(err)
 				}
 				continue
 			}
@@ -224,8 +224,8 @@ func (c *Client) readLoop() {
 
 					if ok {
 						go func() { resChan <- msg }()
-					} else if c.onReceive != nil {
-						go c.onReceive(msg)
+					} else if c.OnReceive != nil {
+						go c.OnReceive(msg)
 					}
 				}
 			}
