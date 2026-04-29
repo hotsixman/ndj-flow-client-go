@@ -25,9 +25,9 @@ type UDSClientOption struct {
 }
 
 type SendHeader struct {
-	To       string         `json:"to"`
-	ID       string         `json:"id"`
-	Metadata map[string]any `json:"-"`
+	To       string            `json:"to"`
+	ID       string            `json:"id"`
+	Metadata map[string]string `json:"-"`
 }
 
 func (h SendHeader) MarshalJSON() ([]byte, error) {
@@ -51,10 +51,10 @@ func (h SendHeader) MarshalJSON() ([]byte, error) {
 }
 
 type ReceiveHeader struct {
-	From     string         `json:"from"`
-	To       string         `json:"to"`
-	ID       string         `json:"id"`
-	Metadata map[string]any `json:"-"`
+	From     string            `json:"from"`
+	To       string            `json:"to"`
+	ID       string            `json:"id"`
+	Metadata map[string]string `json:"-"`
 }
 
 func (h *ReceiveHeader) UnmarshalJSON(data []byte) error {
@@ -76,7 +76,7 @@ func (h *ReceiveHeader) UnmarshalJSON(data []byte) error {
 		delete(m, "id")
 	}
 
-	h.Metadata = make(map[string]any)
+	h.Metadata = make(map[string]string)
 	for k, v := range m {
 		if s, ok := v.(string); ok {
 			h.Metadata[k] = s
